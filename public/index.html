@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heatstone - Hearthstone-inspired Matchmaking</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Main Menu Screen -->
+        <div id="main-menu" class="screen active">
+            <h1 class="game-title">Heatstone</h1>
+            <button id="find-match-btn" class="btn primary-btn">Find Match</button>
+        </div>
+
+        <!-- Matchmaking Screen -->
+        <div id="matchmaking-screen" class="screen">
+            <div class="matchmaking-header">
+                <h2>Finding Opponent</h2>
+                <button id="cancel-search-btn" class="btn secondary-btn">Cancel</button>
+            </div>
+            
+            <!-- 3D Spinning Opponent Types Container -->
+            <div class="opponent-spinner-container">
+                <div class="opponent-spinner">
+                    <!-- These will be populated and animated by JS -->
+                    <div class="opponent-type top"></div>
+                    <div class="opponent-type center"></div>
+                    <div class="opponent-type bottom"></div>
+                </div>
+            </div>
+            
+            <!-- Loading Tip Display -->
+            <div class="loading-tip-container">
+                <div class="loading-tip-icon">💡</div>
+                <div id="loading-tip" class="loading-tip-text">
+                    Loading tip will appear here...
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="player-info">
+                    <div class="player-name">You</div>
+                </div>
+                <div class="vs-display">VS</div>
+                <div class="opponent-info">
+                    <div id="opponent-name" class="player-name">Worthy Opponent</div>
+                </div>
+            </div>
+            
+            <div class="game-content">
+                <div class="game-message">Match found! This is where the game would be.</div>
+            </div>
+            
+            <!-- Simple Chat Interface -->
+            <div class="chat-container">
+                <div id="chat-messages" class="chat-messages"></div>
+                <div class="chat-input-container">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Type a message...">
+                    <button id="send-chat-btn" class="btn primary-btn">Send</button>
+                </div>
+            </div>
+            
+            <button id="return-to-menu-btn" class="btn secondary-btn">Return to Menu</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="js/matchmaking.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
