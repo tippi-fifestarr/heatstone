@@ -6,8 +6,8 @@
 }
 
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #1a103c;
+    font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+    background-color: #1a0f2e;
     color: #fff;
     height: 100vh;
     display: flex;
@@ -21,7 +21,7 @@ body {
     max-width: 800px;
     height: 600px;
     position: relative;
-    background-color: #2a1b4a;
+    background-color: #1a0f2e;
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     overflow: hidden;
@@ -29,23 +29,28 @@ body {
 
 /* Button Styles */
 .btn {
-    padding: 12px 24px;
+    padding: 15px 30px;
     border: none;
     border-radius: 5px;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 .primary-btn {
-    background-color: #f7b10a;
-    color: #1a103c;
+    background: linear-gradient(to bottom, #c79a3c, #8e5e19);
+    color: #fff;
 }
 
 .primary-btn:hover {
-    background-color: #ffcc33;
     transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+}
+
+.primary-btn:active {
+    transform: scale(0.98);
 }
 
 .secondary-btn {
@@ -55,6 +60,7 @@ body {
 
 .secondary-btn:hover {
     background-color: #666;
+    transform: scale(1.05);
 }
 
 /* Screen Styles */
@@ -83,103 +89,95 @@ body {
 .game-title {
     font-size: 48px;
     margin-bottom: 40px;
-    color: #f7b10a;
-    text-shadow: 0 0 10px rgba(247, 177, 10, 0.5);
+    color: gold;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 /* Matchmaking Screen */
 #matchmaking-screen {
     justify-content: space-between;
-}
-
-.matchmaking-header {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-/* 3D Opponent Spinner */
-.opponent-spinner-container {
     position: relative;
-    width: 100%;
-    height: 300px;
-    perspective: 1000px;
 }
 
-.opponent-spinner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
-    animation: spin 8s infinite linear;
-}
-
-@keyframes spin {
-    0% {
-        transform: rotateX(0deg);
-    }
-    100% {
-        transform: rotateX(360deg);
-    }
-}
-
-.opponent-type {
+.status-message {
     position: absolute;
-    left: 0;
-    width: 100%;
-    height: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #3a2b5a;
-    border-radius: 5px;
+    top: 20px;
     font-size: 24px;
     font-weight: bold;
-    backface-visibility: hidden;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    color: gold;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.5s;
 }
 
-.opponent-type.top {
-    top: 80px;
-    transform: rotateX(30deg);
-    opacity: 0.7;
-}
-
-.opponent-type.center {
-    top: 150px;
-    transform: rotateX(0deg);
-    background-color: #4a3b6a;
-    z-index: 10;
+#matchmaking-screen.searching .status-message.searching-msg,
+#matchmaking-screen.match-found .status-message.found-msg {
     opacity: 1;
 }
 
-.opponent-type.bottom {
-    top: 220px;
-    transform: rotateX(-30deg);
-    opacity: 0.7;
+/* 3D Opponent Finder */
+.opponent-finder {
+    position: relative;
+    width: 400px;
+    height: 300px;
+    perspective: 1000px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.opponent-display-box {
+    width: 300px;
+    height: 180px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.opponent-carousel {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease-out;
+}
+
+.opponent-item {
+    position: absolute;
+    width: 100%;
+    height: 60px;
+    left: 0;
+    backface-visibility: hidden;
+    transition: opacity 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    font-weight: bold;
+    color: gold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    text-align: center;
 }
 
 /* Loading Tip */
-.loading-tip-container {
-    width: 100%;
-    padding: 15px;
-    background-color: #3a2b5a;
-    border-radius: 5px;
-    display: flex;
-    align-items: center;
+.loading-tip {
     margin-top: 20px;
-}
-
-.loading-tip-icon {
-    font-size: 24px;
-    margin-right: 15px;
-}
-
-.loading-tip-text {
-    font-size: 16px;
-    line-height: 1.4;
+    text-align: center;
+    max-width: 500px;
+    font-size: 18px;
+    opacity: 0.8;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+    margin-bottom: 20px;
 }
 
 /* Game Screen */
@@ -198,12 +196,15 @@ body {
 .player-name {
     font-size: 24px;
     font-weight: bold;
+    color: gold;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .vs-display {
     font-size: 28px;
     font-weight: bold;
-    color: #f7b10a;
+    color: gold;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 .game-content {
@@ -212,26 +213,29 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #3a2b5a;
-    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
     margin: 20px 0;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
 }
 
 .game-message {
     font-size: 20px;
     text-align: center;
     padding: 20px;
+    color: gold;
 }
 
 /* Chat Interface */
 .chat-container {
     width: 100%;
     height: 200px;
-    background-color: #3a2b5a;
-    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
 }
 
 .chat-messages {
@@ -248,38 +252,81 @@ body {
 }
 
 .chat-message.self {
-    background-color: #4a3b6a;
+    background-color: rgba(199, 154, 60, 0.3);
     align-self: flex-end;
+    border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .chat-message.other {
-    background-color: #5a4b7a;
+    background-color: rgba(60, 60, 199, 0.3);
     align-self: flex-start;
+    border: 1px solid rgba(100, 100, 255, 0.3);
+}
+
+.chat-message.system {
+    background-color: transparent;
+    color: gold;
+    text-align: center;
+    width: 100%;
 }
 
 .chat-input-container {
     display: flex;
     padding: 10px;
-    border-top: 1px solid #4a3b6a;
+    border-top: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .chat-input {
     flex: 1;
     padding: 8px;
-    border: none;
+    border: 1px solid rgba(255, 215, 0, 0.3);
     border-radius: 5px;
     margin-right: 10px;
-    background-color: #4a3b6a;
+    background-color: rgba(0, 0, 0, 0.5);
     color: #fff;
 }
 
 .chat-input:focus {
     outline: none;
-    background-color: #5a4b7a;
+    border-color: gold;
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
 }
 
 #return-to-menu-btn {
     align-self: center;
+    margin-top: 10px;
+}
+
+/* Animation for spinning carousel */
+@keyframes fastSpin {
+    0% {
+        transform: rotateX(0deg);
+    }
+    100% {
+        transform: rotateX(360deg);
+    }
+}
+
+@keyframes slowdownSpin {
+    0% {
+        transform: rotateX(0deg);
+        animation-timing-function: cubic-bezier(0.1, 0.7, 1.0, 0.1);
+    }
+    100% {
+        transform: rotateX(1080deg);
+    }
+}
+
+#matchmaking-screen.searching .opponent-carousel {
+    animation: fastSpin 0.5s infinite linear;
+}
+
+#matchmaking-screen.slowing-down .opponent-carousel {
+    animation: slowdownSpin 3s forwards;
+}
+
+#matchmaking-screen.match-found .opponent-carousel {
+    animation: none;
 }
 
 /* Animation for "Worthy Opponent" reveal */

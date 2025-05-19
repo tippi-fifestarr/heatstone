@@ -90,20 +90,18 @@ class App {
      * Handle when a match is found
      */
     matchFound() {
-        // Stop the regular opponent cycling
-        matchmakingManager.stopMatchmaking();
-        
-        // Show "Worthy Opponent"
+        // Show "Worthy Opponent" with the slowdown effect
         matchmakingManager.showWorthyOpponent();
         
         // Wait for the animation to complete before transitioning to the game screen
+        // Need to account for both the slowdown (3s) and the worthy opponent reveal (1s)
         setTimeout(() => {
             // Initialize the game
             gameManager.initGame();
             
             // Show the game screen
             this.showScreen('game');
-        }, 2000);
+        }, 5000); // Longer delay to allow for both animations
     }
     
     /**

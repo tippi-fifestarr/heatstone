@@ -11,33 +11,29 @@
         <!-- Main Menu Screen -->
         <div id="main-menu" class="screen active">
             <h1 class="game-title">Heatstone</h1>
-            <button id="find-match-btn" class="btn primary-btn">Find Match</button>
+            <button id="find-match-btn" class="btn primary-btn">Find Game</button>
         </div>
 
         <!-- Matchmaking Screen -->
         <div id="matchmaking-screen" class="screen">
-            <div class="matchmaking-header">
-                <h2>Finding Opponent</h2>
-                <button id="cancel-search-btn" class="btn secondary-btn">Cancel</button>
-            </div>
+            <div class="status-message searching-msg">Searching for opponent...</div>
+            <div class="status-message found-msg">Match found!</div>
             
-            <!-- 3D Spinning Opponent Types Container -->
-            <div class="opponent-spinner-container">
-                <div class="opponent-spinner">
-                    <!-- These will be populated and animated by JS -->
-                    <div class="opponent-type top"></div>
-                    <div class="opponent-type center"></div>
-                    <div class="opponent-type bottom"></div>
+            <!-- 3D Opponent Finder -->
+            <div class="opponent-finder">
+                <div class="opponent-display-box">
+                    <div class="opponent-carousel" id="opponent-carousel">
+                        <!-- Opponent types will be added here by JavaScript -->
+                    </div>
                 </div>
             </div>
             
             <!-- Loading Tip Display -->
-            <div class="loading-tip-container">
-                <div class="loading-tip-icon">💡</div>
-                <div id="loading-tip" class="loading-tip-text">
-                    Loading tip will appear here...
-                </div>
+            <div class="loading-tip" id="loading-tip">
+                Remember: The first player to reduce their opponent's health to zero wins the game!
             </div>
+            
+            <button id="cancel-search-btn" class="btn secondary-btn">Cancel</button>
         </div>
 
         <!-- Game Screen -->
