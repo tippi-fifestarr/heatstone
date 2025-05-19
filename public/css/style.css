@@ -88,9 +88,41 @@ body {
 
 .game-title {
     font-size: 48px;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
     color: gold;
     text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Username Input */
+.username-container {
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.username-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-size: 16px;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.username-input:focus {
+    outline: none;
+    border-color: gold;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.username-error {
+    color: #ff6b6b;
+    font-size: 14px;
+    height: 20px;
+    text-align: center;
 }
 
 /* Matchmaking Screen */
@@ -101,7 +133,6 @@ body {
 
 .status-message {
     position: absolute;
-    top: 20px;
     font-size: 24px;
     font-weight: bold;
     color: gold;
@@ -110,8 +141,19 @@ body {
     transition: opacity 0.5s;
 }
 
+.status-message.searching-msg,
+.status-message.found-msg {
+    top: 20px;
+}
+
+.status-message.rooms-msg {
+    bottom: 20px;
+    font-size: 18px;
+}
+
 #matchmaking-screen.searching .status-message.searching-msg,
-#matchmaking-screen.match-found .status-message.found-msg {
+#matchmaking-screen.match-found .status-message.found-msg,
+#matchmaking-screen .status-message.rooms-msg {
     opacity: 1;
 }
 
@@ -294,6 +336,26 @@ body {
     width: 100%;
 }
 
+.message-sender {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 4px;
+    opacity: 0.8;
+}
+
+.chat-message.self .message-sender {
+    color: gold;
+    text-align: right;
+}
+
+.chat-message.other .message-sender {
+    color: #88aaff;
+}
+
+.message-content {
+    word-break: break-word;
+}
+
 .chat-input-container {
     display: flex;
     padding: 10px;
@@ -368,19 +430,37 @@ body {
 
 /* Slot machine style positioning for opponent items */
 .opponent-item.position-top {
-    transform: translateY(-60px) rotateX(30deg);
+    position: absolute;
+    top: 30px;
+    left: 0;
+    width: 100%;
+    transform: translateY(-30px) rotateX(30deg);
     opacity: 0.5;
+    transition: all 0.5s ease-out;
 }
 
 .opponent-item.position-center {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
     transform: translateY(0) rotateX(0deg);
     opacity: 1;
     z-index: 10;
+    color: #ffcc00;
+    text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+    font-size: 32px;
+    transition: all 0.5s ease-out;
 }
 
 .opponent-item.position-bottom {
-    transform: translateY(60px) rotateX(-30deg);
+    position: absolute;
+    top: 90px;
+    left: 0;
+    width: 100%;
+    transform: translateY(30px) rotateX(-30deg);
     opacity: 0.5;
+    transition: all 0.5s ease-out;
 }
 
 /* Animation for "Worthy Opponent" reveal */

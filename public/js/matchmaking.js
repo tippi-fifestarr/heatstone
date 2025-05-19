@@ -10,10 +10,15 @@ class MatchmakingManager {
         this.opponentCarousel = document.getElementById('opponent-carousel');
         this.loadingTipElement = document.getElementById('loading-tip');
         
+        // State variables
+        this.matchFound = false;
+        this.matchType = "Worthy Opponent"; // Default match type
+        
         // Animation state
         this.isSpinning = false;
         this.tipInterval = null;
         this.slowdownTimer = null;
+        this.worthyOpponentItem = null;
         
         // Data
         this.opponentTypes = [
@@ -166,12 +171,35 @@ class MatchmakingManager {
     }
     
     /**
+     * Set match found state and type
+     */
+    setMatchFound(found, type = "Worthy Opponent") {
+        this.matchFound = found;
+        this.matchType = type;
+        
+        if (found) {
+            this.startSlowdownAnimation();
+        }
+    }
+    
+    /**
      * Show "Worthy Opponent" as the final opponent
      */
     showWorthyOpponent() {
+        // Update state
+        this.setMatchFound(true, "Worthy Opponent");
+    }
+    
+    /**
+     * Start the slowdown animation and prepare for the worthy opponent reveal
+     */
+    startSlowdownAnimation() {
         // First start the slowdown animation
         this.matchmakingScreen.classList.remove('searching');
         this.matchmakingScreen.classList.add('slowing-down');
+        
+        // Inject the worthy opponent at the right position
+        this.injectWorthyOpponent();
         
         // After the slowdown animation completes, show the final state
         setTimeout(() => {
@@ -179,6 +207,90 @@ class MatchmakingManager {
             this.matchmakingScreen.classList.remove('slowing-down');
             this.matchmakingScreen.classList.add('match-found');
             
+            // Finalize the worthy opponent display
+            this.finalizeWorthyOpponent();
+        }, 2000); // Match the duration of the slowdown animation
+    }
+    
+    /**
+     * Inject the worthy opponent into the carousel at the right position
+     * without removing existing items
+     */
+    injectWorthyOpponent() {
+        // Get all opponent items
+        const items = this.opponentCarousel.querySelectorAll('.opponent-item');
+        if (items.length === 0) return;
+        
+        // Find the item that will be at the center when the animation ends
+        // For simplicity, we'll use the item that's closest to the center now
+        let centerItem = null;
+        let minDistance = Infinity;
+        
+        items.forEach(item => {
+            // Extract the current rotation from the transform style
+            const transform = item.style.transform || '';
+            const match = transform.match(/rotateX\(([^)]+)deg\)/);
+            if (match) {
+                const rotation = parseFloat(match[1]) % 360;
+                // Calculate distance to 0 degrees (or 360 degrees)
+                const distance = Math.min(
+                    Math.abs(rotation),
+                    Math.abs(360 - rotation)
+                );
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    centerItem = item;
+                }
+            }
+        });
+        
+        // Mark the center item as the worthy opponent
+        if (centerItem) {
+            centerItem.dataset.isWorthy = 'true';
+            this.worthyOpponentItem = centerItem;
+        }
+    }
+    
+    /**
+     * Finalize the worthy opponent display
+     */
+    finalizeWorthyOpponent() {
+        // Get all opponent items
+        const items = this.opponentCarousel.querySelectorAll('.opponent-item');
+        
+        // If we have a worthy opponent item, use it
+        if (this.worthyOpponentItem) {
+            // Clear all other items
+            items.forEach(item => {
+                if (item !== this.worthyOpponentItem) {
+                    item.style.opacity = '0';
+                }
+            });
+            
+            // Update the worthy opponent item
+            this.worthyOpponentItem.textContent = this.matchType;
+            this.worthyOpponentItem.className = 'opponent-item position-center worthy-opponent-reveal';
+            this.worthyOpponentItem.style.transform = 'rotateX(0deg) translateZ(0px)';
+            this.worthyOpponentItem.style.opacity = '1';
+            this.worthyOpponentItem.style.zIndex = '10';
+            
+            // Create two more items for above and below
+            const randomOpponents = this.getRandomOpponents(2);
+            
+            // Create top item
+            const topElement = document.createElement('div');
+            topElement.className = 'opponent-item position-top';
+            topElement.textContent = randomOpponents[0];
+            this.opponentCarousel.appendChild(topElement);
+            
+            // Create bottom item
+            const bottomElement = document.createElement('div');
+            bottomElement.className = 'opponent-item position-bottom';
+            bottomElement.textContent = randomOpponents[1];
+            this.opponentCarousel.appendChild(bottomElement);
+        } else {
+            // Fallback if we don't have a worthy opponent item
             // Clear the carousel and add the slot machine style display
             this.opponentCarousel.innerHTML = '';
             
@@ -193,15 +305,14 @@ class MatchmakingManager {
             
             const centerElement = document.createElement('div');
             centerElement.className = 'opponent-item position-center worthy-opponent-reveal';
-            centerElement.textContent = 'Worthy Opponent';
+            centerElement.textContent = this.matchType;
             this.opponentCarousel.appendChild(centerElement);
             
             const bottomElement = document.createElement('div');
             bottomElement.className = 'opponent-item position-bottom';
             bottomElement.textContent = randomOpponents[1];
             this.opponentCarousel.appendChild(bottomElement);
-            
-        }, 2000); // Match the duration of the shorter slowdown animation
+        }
     }
     
     /**

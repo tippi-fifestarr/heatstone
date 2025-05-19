@@ -15,7 +15,13 @@ class GameManager {
         this.enableChatbotCheckbox = document.getElementById('enable-chatbot');
         
         // State
-        this.chatbotEnabled = this.enableChatbotCheckbox.checked;
+        this.chatbotEnabled = false; // Disabled by default
+        this.opponentId = null;
+        this.opponentName = null;
+        this.useSimulation = true; // Default to simulation mode
+        
+        // Update checkbox to match default state
+        this.enableChatbotCheckbox.checked = this.chatbotEnabled;
         
         // Bind event listeners
         this.sendChatBtn.addEventListener('click', () => this.sendChatMessage());
@@ -33,7 +39,7 @@ class GameManager {
             }
         });
         
-        // For Phase 1, we'll simulate the opponent's responses
+        // For simulation mode, we'll use these responses
         this.simulatedResponses = [
             "Hello there!",
             "Good luck, have fun!",
@@ -46,26 +52,57 @@ class GameManager {
             "I like your strategy.",
             "Well played!"
         ];
+        
+        // Set up Socket.io callbacks
+        this.setupSocketCallbacks();
+    }
+    
+    /**
+     * Set up Socket.io callbacks
+     */
+    setupSocketCallbacks() {
+        // Check if Socket.io client is available
+        if (typeof socketClient === 'undefined') {
+            console.warn('Socket.io client not available');
+            return;
+        }
+        
+        // Set callback for receiving messages
+        socketClient.setCallbacks({
+            onReceiveMessage: (data) => {
+                this.addOpponentMessage(data.message);
+            }
+        });
     }
     
     /**
      * Initialize the game screen with opponent information
      */
-    initGame() {
-        // In Phase 1, we'll just use "Worthy Opponent"
-        this.opponentNameElement.textContent = "Worthy Opponent";
+    initGame(opponentId = null, opponentName = null) {
+        // Set opponent info if provided
+        this.opponentId = opponentId;
+        this.opponentName = opponentName || (opponentId ? opponentId.substring(0, 6) : "Worthy Opponent");
+        
+        // Determine if we should use simulation mode
+        this.useSimulation = !opponentId || typeof socketClient === 'undefined' || !socketClient.isConnected();
+        
+        // Set opponent name in UI
+        this.opponentNameElement.textContent = this.opponentName;
         
         // Clear any previous chat messages
         this.chatMessages.innerHTML = '';
         
         // Add a welcome message
-        this.addSystemMessage("You've been matched with a Worthy Opponent. Chat here!");
+        this.addSystemMessage(`You've been matched with ${this.opponentName}. Chat here!`);
         
         // Update chatbot state from checkbox
         this.chatbotEnabled = this.enableChatbotCheckbox.checked;
         
-        // For Phase 1, simulate an opponent greeting after a short delay if chatbot is enabled
-        if (this.chatbotEnabled) {
+        // TODO: In the future, hook this up to an LLM API for chat assistance
+        // that can read the chat context and provide more intelligent responses
+        
+        // For simulation mode, simulate an opponent greeting after a short delay if chatbot is enabled
+        if (this.useSimulation && this.chatbotEnabled) {
             setTimeout(() => {
                 this.addOpponentMessage(this.getRandomResponse());
             }, 2000);
@@ -85,11 +122,16 @@ class GameManager {
             // Clear the input
             this.chatInput.value = '';
             
-            // For Phase 1, simulate an opponent response after a short delay if chatbot is enabled
-            if (this.chatbotEnabled) {
-                setTimeout(() => {
-                    this.addOpponentMessage(this.getRandomResponse());
-                }, 1000 + Math.random() * 2000);
+            if (this.useSimulation) {
+                // Simulation mode: simulate an opponent response if chatbot is enabled
+                if (this.chatbotEnabled) {
+                    setTimeout(() => {
+                        this.addOpponentMessage(this.getRandomResponse());
+                    }, 1000 + Math.random() * 2000);
+                }
+            } else {
+                // Real mode: send message via Socket.io
+                socketClient.sendMessage(message);
             }
         }
     }
@@ -100,7 +142,21 @@ class GameManager {
     addPlayerMessage(message) {
         const messageElement = document.createElement('div');
         messageElement.className = 'chat-message self';
-        messageElement.textContent = message;
+        
+        // Add sender name if available
+        if (socketClient && socketClient.getUsername()) {
+            const nameSpan = document.createElement('div');
+            nameSpan.className = 'message-sender';
+            nameSpan.textContent = socketClient.getUsername();
+            messageElement.appendChild(nameSpan);
+        }
+        
+        // Add message content
+        const contentSpan = document.createElement('div');
+        contentSpan.className = 'message-content';
+        contentSpan.textContent = message;
+        messageElement.appendChild(contentSpan);
+        
         this.chatMessages.appendChild(messageElement);
         this.scrollChatToBottom();
     }
@@ -108,10 +164,24 @@ class GameManager {
     /**
      * Add an opponent message to the chat
      */
-    addOpponentMessage(message) {
+    addOpponentMessage(message, senderName = null) {
         const messageElement = document.createElement('div');
         messageElement.className = 'chat-message other';
-        messageElement.textContent = message;
+        
+        // Add sender name if provided
+        if (senderName || this.opponentName) {
+            const nameSpan = document.createElement('div');
+            nameSpan.className = 'message-sender';
+            nameSpan.textContent = senderName || this.opponentName;
+            messageElement.appendChild(nameSpan);
+        }
+        
+        // Add message content
+        const contentSpan = document.createElement('div');
+        contentSpan.className = 'message-content';
+        contentSpan.textContent = message;
+        messageElement.appendChild(contentSpan);
+        
         this.chatMessages.appendChild(messageElement);
         this.scrollChatToBottom();
     }
