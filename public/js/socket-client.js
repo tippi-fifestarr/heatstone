@@ -23,7 +23,9 @@ class SocketClient {
             onUsernameSet: () => {},
             onUsernameError: () => {},
             onUsernameRequired: () => {},
-            onRoomCountUpdate: () => {}
+            onRoomCountUpdate: () => {},
+            onGameStateUpdate: () => {},
+            onBuffSelection: () => {}
         };
     }
 
@@ -97,6 +99,11 @@ class SocketClient {
             this.activeRooms = data.count;
             this.activeConnections = data.connections;
             this.callbacks.onRoomCountUpdate(data);
+        });
+        
+        this.socket.on('game_state_update', (data) => {
+            console.log('Game state update:', data);
+            this.callbacks.onGameStateUpdate(data);
         });
 
         return true;

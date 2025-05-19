@@ -94,6 +94,10 @@ class App {
             },
             onGameStart: (data) => {
                 console.log('Game started:', data);
+                // Make sure the game is initialized and started
+                if (this.currentScreen === 'game') {
+                    gameManager.startGame(data);
+                }
             },
             onUsernameSet: (data) => {
                 console.log('Username set:', data);

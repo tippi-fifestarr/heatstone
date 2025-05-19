@@ -188,6 +188,206 @@ io.on('connection', (socket) => {
       });
     }
   });
+  
+  // Handle game-specific events
+  
+  // Handle buff selection
+  socket.on('select_buff', ({ buffType }) => {
+    // Find the room this player is in
+    let playerRoom = null;
+    let roomId = null;
+    
+    for (const [id, room] of gameRooms.entries()) {
+      if (room.players.includes(socket.id)) {
+        playerRoom = room;
+        roomId = id;
+        break;
+      }
+    }
+    
+    if (!playerRoom) return;
+    
+    // Initialize game state if it doesn't exist
+    if (!playerRoom.gameState) {
+      playerRoom.gameState = {
+        players: {},
+        gamePhase: "buffSelection",
+        countdown: 5,
+        winner: null,
+        lastAction: null
+      };
+      
+      // Initialize player states
+      playerRoom.players.forEach(playerId => {
+        playerRoom.gameState.players[playerId] = {
+          heat: 20,
+          heatUpLevel: 1,
+          niceIceLevel: 1,
+          heatUpCost: 10,
+          niceIceCost: 10
+        };
+      });
+    }
+    
+    // Update player's buff
+    if (buffType === 'heatUp') {
+      playerRoom.gameState.players[socket.id].heatUpLevel += 1;
+    } else if (buffType === 'niceIce') {
+      playerRoom.gameState.players[socket.id].niceIceLevel += 1;
+    }
+    
+    // Track buff selections
+    if (!playerRoom.buffSelections) {
+      playerRoom.buffSelections = new Set();
+    }
+    
+    playerRoom.buffSelections.add(socket.id);
+    
+    // If both players have selected buffs, start the game
+    if (playerRoom.buffSelections.size === 2) {
+      playerRoom.gameState.gamePhase = "playing";
+      
+      // Broadcast game state to both players
+      io.to(roomId).emit('game_state_update', {
+        gameState: playerRoom.gameState
+      });
+    }
+  });
+  
+  // Handle stone click
+  socket.on('click_stone', ({ target, gameState }) => {
+    // Find the room this player is in
+    let playerRoom = null;
+    let roomId = null;
+    
+    for (const [id, room] of gameRooms.entries()) {
+      if (room.players.includes(socket.id)) {
+        playerRoom = room;
+        roomId = id;
+        break;
+      }
+    }
+    
+    if (!playerRoom || !playerRoom.gameState) return;
+    
+    // Update game state
+    playerRoom.gameState = gameState;
+    
+    // Broadcast updated game state to the opponent
+    const opponentId = playerRoom.players.find(id => id !== socket.id);
+    if (opponentId) {
+      io.to(opponentId).emit('game_state_update', {
+        gameState: playerRoom.gameState
+      });
+    }
+  });
+  
+  // Handle upgrade purchase
+  socket.on('purchase_upgrade', ({ upgradeType, gameState }) => {
+    // Find the room this player is in
+    let playerRoom = null;
+    let roomId = null;
+    
+    for (const [id, room] of gameRooms.entries()) {
+      if (room.players.includes(socket.id)) {
+        playerRoom = room;
+        roomId = id;
+        break;
+      }
+    }
+    
+    if (!playerRoom || !playerRoom.gameState) return;
+    
+    // Update game state
+    playerRoom.gameState = gameState;
+    
+    // Broadcast updated game state to the opponent
+    const opponentId = playerRoom.players.find(id => id !== socket.id);
+    if (opponentId) {
+      io.to(opponentId).emit('game_state_update', {
+        gameState: playerRoom.gameState
+      });
+    }
+  });
+  
+  // Handle game over
+  socket.on('game_over', ({ winner, reason }) => {
+    // Find the room this player is in
+    let playerRoom = null;
+    let roomId = null;
+    
+    for (const [id, room] of gameRooms.entries()) {
+      if (room.players.includes(socket.id)) {
+        playerRoom = room;
+        roomId = id;
+        break;
+      }
+    }
+    
+    if (!playerRoom) return;
+    
+    // Update game state
+    if (playerRoom.gameState) {
+      playerRoom.gameState.gamePhase = "gameOver";
+      playerRoom.gameState.winner = winner;
+    }
+    
+    // Broadcast game over to the opponent
+    const opponentId = playerRoom.players.find(id => id !== socket.id);
+    if (opponentId) {
+      io.to(opponentId).emit('game_over', {
+        winner,
+        reason
+      });
+    }
+  });
+  
+  // Handle rematch request
+  socket.on('rematch_request', () => {
+    // Find the room this player is in
+    let playerRoom = null;
+    let roomId = null;
+    
+    for (const [id, room] of gameRooms.entries()) {
+      if (room.players.includes(socket.id)) {
+        playerRoom = room;
+        roomId = id;
+        break;
+      }
+    }
+    
+    if (!playerRoom) return;
+    
+    // Track rematch requests
+    if (!playerRoom.rematchRequests) {
+      playerRoom.rematchRequests = new Set();
+    }
+    
+    playerRoom.rematchRequests.add(socket.id);
+    
+    // Notify the opponent
+    const opponentId = playerRoom.players.find(id => id !== socket.id);
+    if (opponentId) {
+      io.to(opponentId).emit('rematch_requested', {
+        requesterId: socket.id,
+        requesterName: getUsernameById(socket.id)
+      });
+    }
+    
+    // If both players have requested a rematch, start a new game
+    if (playerRoom.rematchRequests.size === 2) {
+      // Reset game state
+      playerRoom.gameState = null;
+      playerRoom.buffSelections = new Set();
+      playerRoom.rematchRequests = new Set();
+      
+      // Broadcast game start to both players
+      io.to(roomId).emit('game_start', {
+        roomId,
+        players: playerRoom.players
+      });
+    }
+  });
 });
 
 /**

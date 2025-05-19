@@ -1,6 +1,7 @@
 /**
  * Game.js
- * Handles the basic game UI and chat functionality
+ * Game manager for Farcaster Friend Sync (FFS)
+ * Handles chat and game integration
  */
 
 class GameManager {
@@ -14,16 +15,20 @@ class GameManager {
         this.returnToMenuBtn = document.getElementById('return-to-menu-btn');
         this.enableChatbotCheckbox = document.getElementById('enable-chatbot');
         
-        // State
-        this.chatbotEnabled = false; // Disabled by default
+        // Player info
+        this.playerId = null;
         this.opponentId = null;
         this.opponentName = null;
         this.useSimulation = true; // Default to simulation mode
         
-        // Update checkbox to match default state
+        // Chat state
+        this.chatbotEnabled = false; // Disabled by default
         this.enableChatbotCheckbox.checked = this.chatbotEnabled;
         
-        // Bind event listeners
+        // Current game instance
+        this.currentGame = null;
+        
+        // Bind event listeners for chat
         this.sendChatBtn.addEventListener('click', () => this.sendChatMessage());
         this.chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -45,11 +50,11 @@ class GameManager {
             "Good luck, have fun!",
             "Nice to meet you.",
             "I hope we have a good match.",
-            "What deck are you playing?",
-            "I'm new to this game.",
-            "Have you been playing long?",
-            "This matchmaking animation is cool!",
-            "I like your strategy.",
+            "I'm heating up!",
+            "Stay cool!",
+            "That's a hot move!",
+            "I'm going to ice you!",
+            "Nice strategy!",
             "Well played!"
         ];
         
@@ -67,10 +72,22 @@ class GameManager {
             return;
         }
         
-        // Set callback for receiving messages
+        // Set callbacks for game events
         socketClient.setCallbacks({
             onReceiveMessage: (data) => {
-                this.addOpponentMessage(data.message);
+                this.addOpponentMessage(data.message, data.senderName);
+            },
+            onGameStart: (data) => {
+                console.log('Game started:', data);
+                this.startGame(data);
+            },
+            onGameStateUpdate: (data) => {
+                console.log('Game state update:', data);
+                this.updateGameState(data.gameState);
+            },
+            onGameOver: (data) => {
+                console.log('Game over:', data);
+                this.showGameOver(data.winner, data.reason);
             }
         });
     }
@@ -79,8 +96,9 @@ class GameManager {
      * Initialize the game screen with opponent information
      */
     initGame(opponentId = null, opponentName = null) {
-        // Set opponent info if provided
-        this.opponentId = opponentId;
+        // Set player info
+        this.playerId = socketClient ? socketClient.getSocketId() : 'player';
+        this.opponentId = opponentId || 'opponent';
         this.opponentName = opponentName || (opponentId ? opponentId.substring(0, 6) : "Worthy Opponent");
         
         // Determine if we should use simulation mode
@@ -93,7 +111,7 @@ class GameManager {
         this.chatMessages.innerHTML = '';
         
         // Add a welcome message
-        this.addSystemMessage(`You've been matched with ${this.opponentName}. Chat here!`);
+        this.addSystemMessage(`You've been matched with ${this.opponentName}. Get ready for Heatstone!`);
         
         // Update chatbot state from checkbox
         this.chatbotEnabled = this.enableChatbotCheckbox.checked;
@@ -101,13 +119,34 @@ class GameManager {
         // TODO: In the future, hook this up to an LLM API for chat assistance
         // that can read the chat context and provide more intelligent responses
         
-        // For simulation mode, simulate an opponent greeting after a short delay if chatbot is enabled
-        if (this.useSimulation && this.chatbotEnabled) {
+        // Initialize the game (currently only Heatstone)
+        this.initializeHeatstoneGame();
+        
+        // Start the game
+        if (this.useSimulation) {
+            // Simulation mode: start the game locally
             setTimeout(() => {
-                this.addOpponentMessage(this.getRandomResponse());
-            }, 2000);
+                this.startGame();
+            }, 1000);
+        } else {
+            // Real mode: wait for server to start the game
+            // The server will send a game_start event
+            this.addSystemMessage("Waiting for game to start...");
         }
     }
+    
+    /**
+     * Initialize the Heatstone game
+     */
+    initializeHeatstoneGame() {
+        // Create a new Heatstone game instance
+        this.currentGame = new HeatstoneGame(this);
+        
+        // Initialize the game with player IDs
+        this.currentGame.initialize(this.playerId, this.opponentId);
+    }
+    
+    // Chat methods (reusing from previous implementation)
     
     /**
      * Send a chat message
@@ -137,26 +176,12 @@ class GameManager {
     }
     
     /**
-     * Add a player message to the chat
+     * Add a system message to the chat
      */
-    addPlayerMessage(message) {
+    addSystemMessage(message) {
         const messageElement = document.createElement('div');
-        messageElement.className = 'chat-message self';
-        
-        // Add sender name if available
-        if (socketClient && socketClient.getUsername()) {
-            const nameSpan = document.createElement('div');
-            nameSpan.className = 'message-sender';
-            nameSpan.textContent = socketClient.getUsername();
-            messageElement.appendChild(nameSpan);
-        }
-        
-        // Add message content
-        const contentSpan = document.createElement('div');
-        contentSpan.className = 'message-content';
-        contentSpan.textContent = message;
-        messageElement.appendChild(contentSpan);
-        
+        messageElement.className = 'chat-message system';
+        messageElement.textContent = message;
         this.chatMessages.appendChild(messageElement);
         this.scrollChatToBottom();
     }
@@ -187,14 +212,26 @@ class GameManager {
     }
     
     /**
-     * Add a system message to the chat
+     * Add a player message to the chat
      */
-    addSystemMessage(message) {
+    addPlayerMessage(message) {
         const messageElement = document.createElement('div');
-        messageElement.className = 'chat-message system';
-        messageElement.style.color = '#f7b10a';
-        messageElement.style.textAlign = 'center';
-        messageElement.textContent = message;
+        messageElement.className = 'chat-message self';
+        
+        // Add sender name if available
+        if (socketClient && socketClient.getUsername()) {
+            const nameSpan = document.createElement('div');
+            nameSpan.className = 'message-sender';
+            nameSpan.textContent = socketClient.getUsername();
+            messageElement.appendChild(nameSpan);
+        }
+        
+        // Add message content
+        const contentSpan = document.createElement('div');
+        contentSpan.className = 'message-content';
+        contentSpan.textContent = message;
+        messageElement.appendChild(contentSpan);
+        
         this.chatMessages.appendChild(messageElement);
         this.scrollChatToBottom();
     }
@@ -207,11 +244,99 @@ class GameManager {
     }
     
     /**
-     * Get a random simulated response
+     * Get a random response for the simulated opponent
      */
     getRandomResponse() {
         const randomIndex = Math.floor(Math.random() * this.simulatedResponses.length);
         return this.simulatedResponses[randomIndex];
+    }
+    
+    /**
+     * Start the game
+     */
+    startGame(data = null) {
+        console.log("GameManager.startGame called", data);
+        
+        if (this.currentGame) {
+            console.log("Calling currentGame.startGame");
+            this.currentGame.startGame(data);
+        } else {
+            console.error("No current game instance!");
+            
+            // Try to initialize the game if it doesn't exist
+            this.initializeHeatstoneGame();
+            
+            if (this.currentGame) {
+                this.currentGame.startGame(data);
+            }
+        }
+    }
+    
+    /**
+     * Send a game action to the server
+     */
+    sendGameAction(action, data) {
+        if (!this.useSimulation && socketClient) {
+            socketClient.socket.emit(action, data);
+        }
+    }
+    
+    /**
+     * Request a rematch
+     */
+    requestRematch() {
+        if (!this.useSimulation && socketClient) {
+            socketClient.socket.emit('rematch_request');
+            this.addSystemMessage("Rematch requested. Waiting for opponent...");
+        } else {
+            // In simulation mode, just restart the game
+            this.initGame(this.opponentId, this.opponentName);
+        }
+    }
+    
+    /**
+     * Return to main menu
+     */
+    returnToMainMenu() {
+        // If using Socket.io, leave the room
+        if (!this.useSimulation && socketClient) {
+            socketClient.socket.emit('leave_room');
+        }
+        
+        // Return to main menu
+        if (typeof app !== 'undefined') {
+            app.showScreen('main-menu');
+        }
+    }
+    
+    /**
+     * Check if simulation mode is active
+     */
+    isSimulation() {
+        return this.useSimulation;
+    }
+    
+    /**
+     * Get player name
+     */
+    getPlayerName() {
+        return socketClient ? socketClient.getUsername() || 'You' : 'You';
+    }
+    
+    /**
+     * Get opponent name
+     */
+    getOpponentName() {
+        return this.opponentName;
+    }
+    
+    /**
+     * Update game state
+     */
+    updateGameState(gameState) {
+        if (this.currentGame) {
+            this.currentGame.updateGameState(gameState);
+        }
     }
 }
 
