@@ -226,6 +226,30 @@ body {
     color: gold;
 }
 
+/* Chat Options */
+.chat-options {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.chatbot-toggle {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.chatbot-toggle input {
+    margin-right: 8px;
+}
+
+.toggle-label {
+    color: gold;
+    font-size: 14px;
+}
+
 /* Chat Interface */
 .chat-container {
     width: 100%;
@@ -310,7 +334,20 @@ body {
 @keyframes slowdownSpin {
     0% {
         transform: rotateX(0deg);
-        animation-timing-function: cubic-bezier(0.1, 0.7, 1.0, 0.1);
+    }
+    40% {
+        transform: rotateX(720deg);
+        animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1.0);
+    }
+    70% {
+        transform: rotateX(1060deg);
+        animation-timing-function: cubic-bezier(0.7, 0.1, 1.0, 0.1);
+    }
+    85% {
+        transform: rotateX(1075deg);
+    }
+    92% {
+        transform: rotateX(1078deg);
     }
     100% {
         transform: rotateX(1080deg);
@@ -318,15 +355,32 @@ body {
 }
 
 #matchmaking-screen.searching .opponent-carousel {
-    animation: fastSpin 0.5s infinite linear;
+    animation: fastSpin 0.3s infinite linear;
 }
 
 #matchmaking-screen.slowing-down .opponent-carousel {
-    animation: slowdownSpin 3s forwards;
+    animation: slowdownSpin 2s forwards;
 }
 
 #matchmaking-screen.match-found .opponent-carousel {
     animation: none;
+}
+
+/* Slot machine style positioning for opponent items */
+.opponent-item.position-top {
+    transform: translateY(-60px) rotateX(30deg);
+    opacity: 0.5;
+}
+
+.opponent-item.position-center {
+    transform: translateY(0) rotateX(0deg);
+    opacity: 1;
+    z-index: 10;
+}
+
+.opponent-item.position-bottom {
+    transform: translateY(60px) rotateX(-30deg);
+    opacity: 0.5;
 }
 
 /* Animation for "Worthy Opponent" reveal */

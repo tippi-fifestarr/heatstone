@@ -12,12 +12,24 @@ class GameManager {
         this.chatInput = document.getElementById('chat-input');
         this.sendChatBtn = document.getElementById('send-chat-btn');
         this.returnToMenuBtn = document.getElementById('return-to-menu-btn');
+        this.enableChatbotCheckbox = document.getElementById('enable-chatbot');
+        
+        // State
+        this.chatbotEnabled = this.enableChatbotCheckbox.checked;
         
         // Bind event listeners
         this.sendChatBtn.addEventListener('click', () => this.sendChatMessage());
         this.chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 this.sendChatMessage();
+            }
+        });
+        this.enableChatbotCheckbox.addEventListener('change', () => {
+            this.chatbotEnabled = this.enableChatbotCheckbox.checked;
+            if (this.chatbotEnabled) {
+                this.addSystemMessage("AI Chatbot enabled");
+            } else {
+                this.addSystemMessage("AI Chatbot disabled");
             }
         });
         
@@ -49,10 +61,15 @@ class GameManager {
         // Add a welcome message
         this.addSystemMessage("You've been matched with a Worthy Opponent. Chat here!");
         
-        // For Phase 1, simulate an opponent greeting after a short delay
-        setTimeout(() => {
-            this.addOpponentMessage(this.getRandomResponse());
-        }, 2000);
+        // Update chatbot state from checkbox
+        this.chatbotEnabled = this.enableChatbotCheckbox.checked;
+        
+        // For Phase 1, simulate an opponent greeting after a short delay if chatbot is enabled
+        if (this.chatbotEnabled) {
+            setTimeout(() => {
+                this.addOpponentMessage(this.getRandomResponse());
+            }, 2000);
+        }
     }
     
     /**
@@ -68,10 +85,12 @@ class GameManager {
             // Clear the input
             this.chatInput.value = '';
             
-            // For Phase 1, simulate an opponent response after a short delay
-            setTimeout(() => {
-                this.addOpponentMessage(this.getRandomResponse());
-            }, 1000 + Math.random() * 2000);
+            // For Phase 1, simulate an opponent response after a short delay if chatbot is enabled
+            if (this.chatbotEnabled) {
+                setTimeout(() => {
+                    this.addOpponentMessage(this.getRandomResponse());
+                }, 1000 + Math.random() * 2000);
+            }
         }
     }
     

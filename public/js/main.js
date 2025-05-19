@@ -61,8 +61,8 @@ class App {
         // Start the matchmaking animation
         matchmakingManager.startMatchmaking();
         
-        // For Phase 1, simulate finding a match after a random time (5-15 seconds)
-        const matchTime = 5000 + Math.random() * 10000; // 5-15 seconds
+        // For Phase 1, simulate finding a match after a random time (3-8 seconds)
+        const matchTime = 3000 + Math.random() * 5000; // 3-8 seconds
         
         this.matchmakingTimer = setTimeout(() => {
             this.matchFound();
@@ -94,14 +94,14 @@ class App {
         matchmakingManager.showWorthyOpponent();
         
         // Wait for the animation to complete before transitioning to the game screen
-        // Need to account for both the slowdown (3s) and the worthy opponent reveal (1s)
+        // Need to account for both the slowdown (2s) and the worthy opponent reveal (1s)
         setTimeout(() => {
             // Initialize the game
             gameManager.initGame();
             
             // Show the game screen
             this.showScreen('game');
-        }, 5000); // Longer delay to allow for both animations
+        }, 3500); // Adjusted delay for shorter animations
     }
     
     /**

@@ -79,9 +79,14 @@ class MatchmakingManager {
         // Shuffle the array to randomize the order
         this.shuffleArray(opponentTypesWithoutWorthy);
         
-        // Create items for the carousel - use fewer items for better performance
-        const numItems = 12; // Limit the number of items for better performance
-        const selectedOpponents = opponentTypesWithoutWorthy.slice(0, numItems);
+        // Create items for the carousel - use more items for a better cylinder effect
+        const numItems = 20; // More items for a better cylinder effect
+        
+        // Create a repeating pattern if we don't have enough items
+        const selectedOpponents = [];
+        for (let i = 0; i < numItems; i++) {
+            selectedOpponents.push(opponentTypesWithoutWorthy[i % opponentTypesWithoutWorthy.length]);
+        }
         
         selectedOpponents.forEach((type, index) => {
             const item = document.createElement('div');
@@ -174,36 +179,29 @@ class MatchmakingManager {
             this.matchmakingScreen.classList.remove('slowing-down');
             this.matchmakingScreen.classList.add('match-found');
             
-            // Clear the carousel and add only three items
+            // Clear the carousel and add the slot machine style display
             this.opponentCarousel.innerHTML = '';
             
-            // Create three items: one above, Worthy Opponent in the center, and one below
+            // Get random opponents for top and bottom positions
             const randomOpponents = this.getRandomOpponents(2);
             
-            // Create the items with better positioning
-            const items = [
-                { text: randomOpponents[0], angle: -30, opacity: 0.5, zIndex: 1 },
-                { text: 'Worthy Opponent', angle: 0, opacity: 1, class: 'worthy-opponent-reveal', zIndex: 3 },
-                { text: randomOpponents[1], angle: 30, opacity: 0.5, zIndex: 1 }
-            ];
+            // Create the slot machine style display with 3 visible items
+            const topElement = document.createElement('div');
+            topElement.className = 'opponent-item position-top';
+            topElement.textContent = randomOpponents[0];
+            this.opponentCarousel.appendChild(topElement);
             
-            items.forEach(item => {
-                const element = document.createElement('div');
-                element.className = 'opponent-item';
-                if (item.class) {
-                    element.classList.add(item.class);
-                }
-                element.textContent = item.text;
-                
-                // Better positioning to prevent overlap
-                const translateZ = item.angle === 0 ? 50 : 30;
-                element.style.transform = `rotateX(${item.angle}deg) translateZ(${translateZ}px)`;
-                element.style.opacity = item.opacity;
-                element.style.zIndex = item.zIndex;
-                
-                this.opponentCarousel.appendChild(element);
-            });
-        }, 3000); // Match the duration of the slowdown animation
+            const centerElement = document.createElement('div');
+            centerElement.className = 'opponent-item position-center worthy-opponent-reveal';
+            centerElement.textContent = 'Worthy Opponent';
+            this.opponentCarousel.appendChild(centerElement);
+            
+            const bottomElement = document.createElement('div');
+            bottomElement.className = 'opponent-item position-bottom';
+            bottomElement.textContent = randomOpponents[1];
+            this.opponentCarousel.appendChild(bottomElement);
+            
+        }, 2000); // Match the duration of the shorter slowdown animation
     }
     
     /**
